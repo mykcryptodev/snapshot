@@ -12,6 +12,7 @@ import SafeSnapTooltip from './Tooltip.vue';
 import SafeSnapHandleOutcome from './HandleOutcome.vue';
 import SafeSnapHandleOutcomeUma from './HandleOutcomeUma.vue';
 import SafeSnapFormImportTransactionsButton from './Form/ImportTransactionsButton.vue';
+import SafeSnapFormExecutableIf from './Form/ExecutableIf.vue';
 import SafeSnapFormTransactionBatch from './Form/TransactionBatch.vue';
 
 const plugin = new Plugin();
@@ -60,6 +61,7 @@ function formatBatches(network, module, batches, multiSend) {
 export default {
   components: {
     SafeSnapTooltip,
+    SafeSnapFormExecutableIf,
     SafeSnapFormImportTransactionsButton,
     SafeSnapHandleOutcome,
     SafeSnapHandleOutcomeUma,
@@ -71,6 +73,7 @@ export default {
     'network',
     'realityAddress',
     'umaAddress',
+    'chainlinkOracleAddress',
     'multiSendAddress',
     'preview',
     'hash'
@@ -81,6 +84,7 @@ export default {
   },
   data() {
     return {
+      executableIf: undefined,
       input: formatBatches(
         this.network,
         this.realityAddress,
@@ -125,24 +129,38 @@ export default {
   },
   async mounted() {
     try {
-      const moduleType = await plugin.validateUmaModule(
+      const moduleType = await plugin.getModuleType(
         this.network,
-        this.umaAddress
+        this.umaAddress,
+        this.realityAddress,
+        this.chainlinkOracleAddress
       );
 
       const { dao } =
-        moduleType === 'reality'
+        moduleType === 'chainlink'
+          ? { dao: null }
+          : moduleType === 'reality'
           ? await plugin.getModuleDetailsReality(
               this.network,
               this.realityAddress
             )
           : await plugin.getModuleDetailsUma(this.network, this.umaAddress);
 
-      const moduleAddress =
-        moduleType === 'reality' ? this.realityAddress : this.umaAddress;
+      const moduleAddress = () => {
+        switch (moduleType) {
+          case 'chainlink':
+            return this.chainlinkOracleAddress;
+          case 'reality':
+            return this.realityAddress;
+          case 'uma':
+            return this.umaAddress;
+          default:
+            return null;
+        }
+      };
 
       this.moduleType = moduleType;
-      this.moduleAddress = moduleAddress;
+      this.moduleAddress = moduleAddress();
       this.moduleTypeReady = true;
       this.gnosisSafeAddress = dao;
       this.transactionConfig = {
@@ -174,6 +192,10 @@ export default {
     removeBatch(index) {
       this.input.splice(index, 1);
       this.$emit('update:modelValue', this.input);
+    },
+    updateExecutableIf(executableIf) {
+      this.executableIf = executableIf;
+      this.$emit('update:modelValue', this.executableIf);
     },
     updateTransactionBatch(index, batch) {
       this.input[index] = batch;
@@ -219,6 +241,17 @@ export default {
         :module-type="moduleType"
       />
     </h4>
+    <div
+      v-if="this.moduleType === 'chainlink'"
+      class="rounded-t-none border-b px-4 pt-3 pb-[12px] md:rounded-t-md"
+    >
+      <SafeSnapFormExecutableIf
+        :proposal="proposal"
+        :modelValue="input"
+        :config="transactionConfig"
+        @update:modelValue="updateExecutableIf($event)"
+      />
+    </div>
     <UiCollapsibleText
       v-if="hash"
       :show-arrow="true"

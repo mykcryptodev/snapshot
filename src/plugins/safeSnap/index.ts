@@ -142,15 +142,23 @@ export default class Plugin {
     return getModuleDetailsReality(provider, network, moduleAddress);
   }
 
-  async validateUmaModule(network: string, umaAddress: string) {
+  async getModuleType(
+    network: string,
+    umaAddress: string,
+    realityAddress: string,
+    chainlinkOracleAddress: string
+  ) {
+    if (
+      !isAddress(umaAddress) &&
+      !isAddress(realityAddress) &&
+      isAddress(chainlinkOracleAddress)
+    ) {
+      return 'chainlink';
+    }
+
     if (!isAddress(umaAddress)) return 'reality';
-    
     const provider: StaticJsonRpcProvider = getProvider(network);
-    const moduleContract = new Contract(
-      umaAddress,
-      UMA_MODULE_ABI,
-      provider
-    );
+    const moduleContract = new Contract(umaAddress, UMA_MODULE_ABI, provider);
 
     return moduleContract
       .rules()

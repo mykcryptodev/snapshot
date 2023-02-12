@@ -10,7 +10,8 @@
         {
           "network": "CHAIN_ID",
           "realityAddress": "0xSWITCH_WITH_REALITY_MODULE_ADDRESS",
-          "umaAddress": "0xSWITCH_WITH_UMA_MODULE_ADDRESS"
+          "umaAddress": "0xSWITCH_WITH_UMA_MODULE_ADDRESS",
+          "chainlinkOracleAddress": "0x77e1475a3BF2c1aDF6F3c0Df3D0AeDbaC39b4bfA"
         }
       ]
     },
@@ -19,9 +20,11 @@
         {
           "network": "CHAIN_ID",
           "realityAddress": "0xSWITCH_WITH_REALITY_MODULE_ADDRESS",
-          "umaAddress": "0xSWITCH_WITH_UMA_MODULE_ADDRESS"
+          "umaAddress": "0xSWITCH_WITH_UMA_MODULE_ADDRESS",
+          "chainlinkOracleAddress": "0x77e1475a3BF2c1aDF6F3c0Df3D0AeDbaC39b4bfA"
         }
-      ]
+      ],
+      "executableIf": ""
     }
   }
 }

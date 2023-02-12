@@ -27,7 +27,7 @@ const { copyToClipboard } = useCopy();
           <i-ho-duplicate class="ml-1" />
         </BaseButton>
         <div class="mt-3">
-          {{ moduleType === 'reality' ? 'Reality' : 'UMA' }} Module address
+          <span className="capitalize">{{ moduleType }}</span> Module address
         </div>
         <BaseButton
           class="flex w-full items-center justify-between"

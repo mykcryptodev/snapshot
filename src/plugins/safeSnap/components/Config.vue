@@ -73,6 +73,7 @@ export default {
         :proposal="proposal"
         :hash="safe.hash"
         :network="safe.network"
+        :chainlink-oracle-address="safe.chainlinkOracleAddress"
         :reality-address="safe.realityAddress"
         :uma-address="safe.umaAddress"
         :multi-send-address="safe.multiSendAddress"
