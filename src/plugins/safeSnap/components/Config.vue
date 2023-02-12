@@ -15,7 +15,7 @@ export default {
   ],
   emits: ['update:modelValue'],
   data() {
-    let input;
+    let executableIf, input;
     if (!Object.keys(this.modelValue).length) {
       input = {
         safes: coerceConfig(this.config, this.network).safes.map(safe => ({
@@ -23,8 +23,10 @@ export default {
           hash: null,
           txs: []
         })),
-        valid: true
+        valid: true,
+        executableIf: this.proposal.choices[0].text
       };
+      executableIf = this.proposal.choices[0].text;
     } else {
       const value = clone(this.modelValue);
       if (value.safes && this.config && Array.isArray(this.config.safes)) {
@@ -34,13 +36,15 @@ export default {
         }));
       }
       input = coerceConfig(value, this.network);
+      executableIf = input.executableIf;
     }
 
-    return { input };
+    return { input, executableIf };
   },
   methods: {
     updateSafeTransactions() {
       if (this.preview) return;
+      this.input.executableIf = this.executableIf;
       this.input.valid = isValidInput(this.input);
       this.input.safes = this.input.safes.map(safe => {
         return {
@@ -49,6 +53,10 @@ export default {
         };
       });
       this.$emit('update:modelValue', this.input);
+    },
+    updateExecutableIf(executableIf) {
+      this.executableIf = executableIf;
+      this.updateSafeTransactions();
     }
   }
 };
@@ -79,6 +87,7 @@ export default {
         :multi-send-address="safe.multiSendAddress"
         :model-value="safe.txs"
         @update:modelValue="updateSafeTransactions(index, $event)"
+        @update:executableIf="updateExecutableIf($event)"
       />
     </div>
   </div>

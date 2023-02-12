@@ -249,7 +249,7 @@ export default {
         :proposal="proposal"
         :modelValue="input"
         :config="transactionConfig"
-        @update:modelValue="updateExecutableIf($event)"
+        @update:executableIf="updateExecutableIf($event)"
       />
     </div>
     <UiCollapsibleText

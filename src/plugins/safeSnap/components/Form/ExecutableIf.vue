@@ -23,15 +23,18 @@ export default {
     }
   },
   mounted() {
+    if (this.config.preview) {
+      this.executableIf = this.proposal.plugins.safeSnap.executableIf;
+    }
     if (!this.modelValue.executableIf) {
       this.executableIf = this.proposal.choices[0].text;
-      this.$emit('update:modelValue', this.executableIf);
+      this.$emit('update:executableIf', this.executableIf);
     }
   },
   methods: {
     handleExecutableIfChange(executableIf) {
       this.executableIf = executableIf;
-      this.$emit('update:modelValue', executableIf);
+      this.$emit('update:executableIf', executableIf);
     }
   }
 };
@@ -40,10 +43,21 @@ export default {
 <template>
   <UiSelect
     :disabled="config.preview"
-    :model-value="executableIf"
+    :model-value="
+      !config.preview
+        ? executableIf
+        : this.proposal.plugins.safeSnap.executableIf
+    "
     @update:modelValue="handleExecutableIfChange($event)"
   >
     <template #label>{{ $t('Executable if') }}</template>
+    <option
+      v-if="config.preview"
+      selected
+      :value="this.proposal.plugins.safeSnap.executableIf"
+    >
+      {{ $t(`${this.proposal.plugins.safeSnap.executableIf}`) }}
+    </option>
     <option v-for="choice in choices" :key="choice" :value="choice">
       {{ choice }}
     </option>
