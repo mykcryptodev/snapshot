@@ -195,7 +195,7 @@ export default {
     },
     updateExecutableIf(executableIf) {
       this.executableIf = executableIf;
-      this.$emit('update:modelValue', this.executableIf);
+      this.$emit('update:executableIf', this.executableIf);
     },
     updateTransactionBatch(index, batch) {
       this.input[index] = batch;

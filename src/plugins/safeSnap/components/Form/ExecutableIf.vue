@@ -25,8 +25,7 @@ export default {
   mounted() {
     if (this.config.preview) {
       this.executableIf = this.proposal.plugins.safeSnap.executableIf;
-    }
-    if (!this.modelValue.executableIf) {
+    } else if (!this.modelValue.executableIf) {
       this.executableIf = this.proposal.choices[0].text;
       this.$emit('update:executableIf', this.executableIf);
     }
