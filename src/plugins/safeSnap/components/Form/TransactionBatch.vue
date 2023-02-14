@@ -1,4 +1,5 @@
 <script>
+import { isAddress } from '@ethersproject/address';
 import { clone } from '@snapshot-labs/snapshot.js/src/utils';
 import { useSafe } from '@/composables';
 import { createBatch, ERC20_ABI, ERC721_ABI } from '../../index';
@@ -52,7 +53,9 @@ export default {
     createBatch(nonce, txs) {
       const chainId = parseInt(this.config.network);
       return createBatch(
-        this.config.realityAddress,
+        isAddress(this.config.chainlinkOracleAddress)
+          ? this.config.chainlinkOracleAddress
+          : this.config.realityAddress,
         chainId,
         nonce,
         txs,

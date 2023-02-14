@@ -46,6 +46,7 @@ export default {
       if (this.preview) return;
       this.input.executableIf = this.executableIf;
       this.input.valid = isValidInput(this.input);
+      console.log('hash', getSafeHash(this.input.safes[0]));
       this.input.safes = this.input.safes.map(safe => {
         return {
           ...safe,

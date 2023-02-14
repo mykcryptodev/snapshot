@@ -11,6 +11,7 @@ import { getIpfsUrl, shorten } from '@/helpers/utils';
 import SafeSnapTooltip from './Tooltip.vue';
 import SafeSnapHandleOutcome from './HandleOutcome.vue';
 import SafeSnapHandleOutcomeUma from './HandleOutcomeUma.vue';
+import SafeSnapHandleOutcomeChainlink from './HandleOutcomeChainlink.vue';
 import SafeSnapFormImportTransactionsButton from './Form/ImportTransactionsButton.vue';
 import SafeSnapFormExecutableIf from './Form/ExecutableIf.vue';
 import SafeSnapFormTransactionBatch from './Form/TransactionBatch.vue';
@@ -65,6 +66,7 @@ export default {
     SafeSnapFormImportTransactionsButton,
     SafeSnapHandleOutcome,
     SafeSnapHandleOutcomeUma,
+    SafeSnapHandleOutcomeChainlink,
     SafeSnapFormTransactionBatch
   },
   props: [
@@ -99,6 +101,7 @@ export default {
       transactionConfig: {
         preview: this.preview,
         gnosisSafeAddress: undefined,
+        chainlinkOracleAddress: this.chainlinkOracleAddress,
         realityAddress: this.realityAddress,
         umaAddress: this.umaAddress,
         network: this.network,
@@ -307,6 +310,20 @@ export default {
             preview &&
             proposalResolved &&
             moduleType === 'uma' &&
+            moduleTypeReady
+          "
+          :batches="input"
+          :proposal="proposal"
+          :uma-address="transactionConfig.umaAddress"
+          :multi-send-address="transactionConfig.multiSendAddress"
+          :network="transactionConfig.network"
+        />
+
+        <SafeSnapHandleOutcomeChainlink
+          v-if="
+            preview &&
+            proposalResolved &&
+            moduleType === 'chainlink' &&
             moduleTypeReady
           "
           :batches="input"

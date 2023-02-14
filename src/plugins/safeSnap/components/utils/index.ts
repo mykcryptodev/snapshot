@@ -45,8 +45,6 @@ export function createBatch(
   txs: SafeTransaction[],
   multiSendAddress: string
 ) {
-  console.log({ module });
-
   const mainTransaction = formatBatchTransaction(txs, nonce, multiSendAddress);
   const hash = mainTransaction
     ? getBatchHash(module, chainId, mainTransaction)
