@@ -17,6 +17,7 @@ import {
 import getProvider from '@snapshot-labs/snapshot.js/src/utils/provider';
 import {
   SafeTransaction,
+  ChainlinkOracleProposal,
   RealityOracleProposal,
   UmaOracleProposal
 } from '@/helpers/interfaces';
@@ -25,7 +26,8 @@ import {
   REALITY_MODULE_ABI,
   UMA_MODULE_ABI,
   ORACLE_ABI,
-  ERC20_ABI
+  ERC20_ABI,
+  CHAINLINK_MODULE_ABI
 } from './constants';
 import {
   buildQuestion,
@@ -33,6 +35,7 @@ import {
   getModuleDetailsReality,
   getProposalDetails
 } from './utils/realityModule';
+import { getChainlinkExecutionDetails } from './utils/chainlinkModule';
 import { getModuleDetailsUma } from './utils/umaModule';
 import { retrieveInfoFromOracle } from './utils/realityETH';
 import { getNativeAsset } from '@/plugins/safeSnap/utils/coins';
@@ -91,6 +94,28 @@ export default class Plugin {
         data: tx.data || '0x'
       });
     });
+  }
+
+  async getExecutionDetailsWithHashesChainlink(
+    network: string,
+    moduleAddress: string,
+    proposalId: string
+  ): Promise<Omit<ChainlinkOracleProposal, 'transactions'>> {
+    const provider: StaticJsonRpcProvider = getProvider(network);
+
+    const { hasCompletelyExecuted, txIndexToExecute } =
+      await getChainlinkExecutionDetails(
+        provider,
+        network,
+        moduleAddress,
+        proposalId
+      );
+
+    return {
+      proposalId,
+      hasCompletelyExecuted,
+      nextTxIndex: 0 //txIndexToExecute,
+    };
   }
 
   async getExecutionDetailsWithHashes(
@@ -430,6 +455,63 @@ export default class Plugin {
       '[Realitio] executed claimMultipleAndWithdrawBalance:',
       receipt
     );
+  }
+
+  async *sendResultOnChainViaChainlinkRequest(
+    web3: any,
+    moduleAddress: string,
+    // proposalId: string,
+    // txHashes: string[],
+    // moduleTx: SafeTransaction,
+    // transactionIndex: number,
+    request: any,
+    subscriptionId: number,
+    gasLimit: number
+  ) {
+    const tx = await sendTransaction(
+      web3,
+      moduleAddress,
+      CHAINLINK_MODULE_ABI,
+      'executeRequest',
+      [
+        request.source,
+        request.secrets ?? [],
+        request.secretsLocation,
+        request.args ?? [],
+        subscriptionId,
+        gasLimit
+      ],
+      { gasLimit: 1500000 }
+    );
+    yield;
+    const receipt = await tx.wait();
+    console.log('[Chainlink module] executed request:', receipt);
+  }
+
+  async *executeProposalWithHashesChainlink(
+    web3: any,
+    moduleAddress: string,
+    proposalId: string,
+    moduleTx: SafeTransaction,
+    transactionIndex: number
+  ) {
+    const tx = await sendTransaction(
+      web3,
+      moduleAddress,
+      CHAINLINK_MODULE_ABI,
+      'executeProposalWithIndex',
+      [
+        proposalId,
+        moduleTx.to,
+        moduleTx.value,
+        moduleTx.data || '0x',
+        moduleTx.operation,
+        transactionIndex
+      ]
+    );
+    yield;
+    const receipt = await tx.wait();
+    console.log('[DAO module] executed proposal:', receipt);
   }
 
   async *executeProposalWithHashes(

@@ -45,6 +45,13 @@ export const GNOSIS_SAFE_TRANSACTION_API_URLS = {
 
 // ABIs
 
+export const CHAINLINK_MODULE_ABI = [
+  'function hasCompletelyExecuted() view returns (bool)',
+  'function txIndexToExecute() view returns (uint256)',
+  'function executeRequest(string source, bytes secrets, uint8 secretsLocation, string[] args, uint64 subscriptionId, uint32 gasLimit)',
+  'function executeProposalWithIndex(string proposalId, address to, uint256 value, bytes data, uint8 operation, uint256 txIndex)'
+];
+
 export const REALITY_MODULE_ABI = [
   // Events
   'event ProposalQuestionCreated(bytes32 indexed questionId, string indexed proposalId)',

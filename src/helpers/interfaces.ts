@@ -220,6 +220,13 @@ export interface SafeTransaction {
   nonce: string;
 }
 
+export interface ChainlinkOracleProposal {
+  proposalId: string;
+  nextTxIndex: number | undefined;
+  transactions: SafeTransaction[];
+  hasCompletelyExecuted: boolean;
+}
+
 export interface RealityOracleProposal {
   dao: string;
   oracle: string;

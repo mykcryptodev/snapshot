@@ -122,7 +122,9 @@ export default {
       return shortName || name || `#${this.network}`;
     },
     networkIcon() {
-      const { logo } = networks[this.network];
+      const { logo } = networks[this.network]
+        ? networks[this.network]
+        : networks['1'];
       return getIpfsUrl(logo);
     },
     proposalResolved() {
@@ -328,7 +330,7 @@ export default {
           "
           :batches="input"
           :proposal="proposal"
-          :uma-address="transactionConfig.umaAddress"
+          :chainlink-oracle-address="transactionConfig.chainlinkOracleAddress"
           :multi-send-address="transactionConfig.multiSendAddress"
           :network="transactionConfig.network"
         />

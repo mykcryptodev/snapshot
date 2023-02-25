@@ -14,7 +14,6 @@ export default {
   data() {
     return {
       plugin: new Plugin(),
-
       to: '',
       value: '0',
       data: ''
