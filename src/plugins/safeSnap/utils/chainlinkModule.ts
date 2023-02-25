@@ -14,23 +14,30 @@ export const getChainlinkExecutionDetails = async (
   hasCompletelyExecuted: boolean;
   txIndexToExecute: number | undefined;
 }> => {
+  console.log({ network });
   if (proposalId) {
     try {
       const result = await multicall(network, provider, CHAINLINK_MODULE_ABI, [
-        [oracleAddress, 'hasCompletelyExecuted', [proposalId]],
-        [oracleAddress, 'txIndexToExecute', [proposalId]]
+        [oracleAddress, 'hasCompletelyExecuted', [proposalId]]
       ]);
+      console.log({ result });
 
       return {
         hasCompletelyExecuted: result[0][0],
-        txIndexToExecute: result[1][0].toNumber()
+        txIndexToExecute: 0 //result[1][0].toNumber()
       };
     } catch (e) {
+      console.log({ e });
       // We expect an error while the proposal is not on chain yet
+      return {
+        hasCompletelyExecuted: false,
+        txIndexToExecute: 0
+      };
     }
+  } else {
+    return {
+      hasCompletelyExecuted: false,
+      txIndexToExecute: undefined
+    };
   }
-  return {
-    hasCompletelyExecuted: false,
-    txIndexToExecute: undefined
-  };
 };

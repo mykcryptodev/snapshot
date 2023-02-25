@@ -137,7 +137,7 @@ const sendOutcomeOnChain = async () => {
   console.log('here we go...');
 
   if (!getInstance().isAuthenticated.value) return;
-  action2InProgress.value = 'execute-proposal';
+  action2InProgress.value = 'send-result-on-chain';
   console.log('sending...');
   try {
     // Build the parameters to make a request from the client contract
@@ -147,7 +147,7 @@ const sendOutcomeOnChain = async () => {
       secretsLocation: 0,
       args: [props.proposal.id]
     };
-    const subscriptionId = 36; //149;//14;
+    const subscriptionId = 153; //36; //149;//14;
     const gasLimit = 300000;
     const transaction = plugin.sendResultOnChainViaChainlinkRequest(
       getInstance().web3,
@@ -161,6 +161,7 @@ const sendOutcomeOnChain = async () => {
     notify(t('notify.youDidIt'));
     await sleep(3e3);
     await updateDetails();
+    action2InProgress.value = null;
   } catch (err) {
     console.log({ err });
     action2InProgress.value = null;
@@ -242,7 +243,6 @@ onMounted(async () => {
 </script>
 
 <template>
-  {{ proposalState }}
   <div v-if="proposalState === ProposalStates.error" class="my-4">
     {{ $t('safeSnap.labels.error') }}
   </div>
@@ -267,6 +267,13 @@ onMounted(async () => {
     </BaseButton>
   </div>
   <div v-if="proposalState === proposalStates.waitingForExecution" class="my-4">
+    <BaseButton
+      :loading="action2InProgress === 'send-result-on-chain'"
+      @click="sendOutcomeOnChain"
+      class="mr-4"
+    >
+      {{ $t('Send Results On-Chain') }}
+    </BaseButton>
     <BaseButton
       :loading="action2InProgress === 'execute-proposal'"
       @click="executeProposal"

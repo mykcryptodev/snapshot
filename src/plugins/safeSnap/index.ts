@@ -111,10 +111,12 @@ export default class Plugin {
         proposalId
       );
 
+    console.log({ hasCompletelyExecuted, txIndexToExecute });
+
     return {
       proposalId,
       hasCompletelyExecuted,
-      nextTxIndex: 0 //txIndexToExecute,
+      nextTxIndex: txIndexToExecute
     };
   }
 
