@@ -836,10 +836,10 @@
   resolved "https://registry.yarnpkg.com/@sideway/pinpoint/-/pinpoint-2.0.0.tgz#cff8ffadc372ad29fd3f78277aeb29e632cc70df"
   integrity sha512-RNiOoTPkptFtSVzQevY/yWtZwf/RxyVnPy/OcA9HBM3MlGDnBEYL5B41H0MTn0Uec8Hi+2qUtTfG2WWZBmMejQ==
 
-"@snapshot-labs/lock@^0.1.1012":
-  version "0.1.1012"
-  resolved "https://registry.yarnpkg.com/@snapshot-labs/lock/-/lock-0.1.1012.tgz#930a604e3512a765ad7734ecffa8cb5e6e80fc8a"
-  integrity sha512-o1s8RbvPYwJGCy6JfHq5M/gHbjQmV8Va/JHllLe0KHyVLo7f9BKR+TFpY6W9AkGB5BAqes4pvDHyA72ECfmU+A==
+"@snapshot-labs/lock@^0.1.1014":
+  version "0.1.1014"
+  resolved "https://registry.yarnpkg.com/@snapshot-labs/lock/-/lock-0.1.1014.tgz#1c12a4d5f44b9f369c9e750737b7263cca877236"
+  integrity sha512-nU6HSEGXHkEvjGgn1wXVd3o/pQlAY8uBDh2fGXBmCbJIR8TWqXuFxrz+afsitDltmeSlfXn8dKCNKFLHfuMBVA==
   dependencies:
     "@coinbase/wallet-sdk" "^3.4.0"
     "@gnosis.pm/safe-apps-provider" "^0.14.0"
@@ -856,10 +856,10 @@
   dependencies:
     cross-fetch "^3.1.5"
 
-"@snapshot-labs/snapshot.js@^0.4.61":
-  version "0.4.61"
-  resolved "https://registry.yarnpkg.com/@snapshot-labs/snapshot.js/-/snapshot.js-0.4.61.tgz#a8849d34deed94443e0eba047e76a377ae0946a1"
-  integrity sha512-7EpZKcRmECbq8b46ghQa/MCSo99r2NxufZ5UJE1RImPRmFSwyekZUd7QP/KoqUacKtaJVbcYl3PXM5ZoYwhkNQ==
+"@snapshot-labs/snapshot.js@^0.4.78":
+  version "0.4.78"
+  resolved "https://registry.yarnpkg.com/@snapshot-labs/snapshot.js/-/snapshot.js-0.4.78.tgz#1caf0e5af8c0e17f4de71c1d9bfe91a4e3e626a7"
+  integrity sha512-6gl0leNtJuoqFExBpXJook9V3V1vuh9gekZuJbcPrmelEIkOy3vf8aVeh0NutT1xsI2NWk6MWMZ27k2MSudtZg==
   dependencies:
     "@ensdomains/eth-ens-namehash" "^2.0.15"
     "@ethersproject/abi" "^5.6.4"
