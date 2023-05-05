@@ -10,7 +10,8 @@
         {
           "network": "CHAIN_ID",
           "realityAddress": "0xSWITCH_WITH_REALITY_MODULE_ADDRESS",
-          "umaAddress": "0xSWITCH_WITH_UMA_MODULE_ADDRESS"
+          "umaAddress": "0xSWITCH_WITH_UMA_MODULE_ADDRESS",
+          "chainlinkConsumerAddress": "0xSWITCH_WITH_CHAINLINK_CONSUMER_ADDRESS"
         }
       ]
     },
@@ -19,7 +20,8 @@
         {
           "network": "CHAIN_ID",
           "realityAddress": "0xSWITCH_WITH_REALITY_MODULE_ADDRESS",
-          "umaAddress": "0xSWITCH_WITH_UMA_MODULE_ADDRESS"
+          "umaAddress": "0xSWITCH_WITH_UMA_MODULE_ADDRESS",
+          "chainlinkConsumerAddress": "0xSWITCH_WITH_CHAINLINK_CONSUMER_ADDRESS"
         }
       ]
     }

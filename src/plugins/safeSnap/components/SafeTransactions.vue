@@ -11,8 +11,10 @@ import { getIpfsUrl, shorten } from '@/helpers/utils';
 import SafeSnapTooltip from './Tooltip.vue';
 import SafeSnapHandleOutcome from './HandleOutcome.vue';
 import SafeSnapHandleOutcomeUma from './HandleOutcomeUma.vue';
+import SafeSnapHandleOutcomeChainlink from './HandleOutcomeChainlink.vue';
 import SafeSnapFormImportTransactionsButton from './Form/ImportTransactionsButton.vue';
 import SafeSnapFormTransactionBatch from './Form/TransactionBatch.vue';
+import SafeSnapFormExecutableIf from './Form/ExecutableIf.vue';
 import { getInstance } from '@snapshot-labs/lock/plugins/vue3';
 import { sleep } from '@snapshot-labs/snapshot.js/src/utils';
 
@@ -116,7 +118,9 @@ export default {
     SafeSnapFormImportTransactionsButton,
     SafeSnapHandleOutcome,
     SafeSnapHandleOutcomeUma,
-    SafeSnapFormTransactionBatch
+    SafeSnapHandleOutcomeChainlink,
+    SafeSnapFormTransactionBatch,
+    SafeSnapFormExecutableIf
   },
   props: [
     'modelValue',
@@ -126,6 +130,7 @@ export default {
     'network',
     'realityAddress',
     'umaAddress',
+    'chainlinkConsumerAddress',
     'multiSendAddress',
     'preview',
     'hash'
@@ -152,6 +157,7 @@ export default {
         gnosisSafeAddress: undefined,
         realityAddress: this.realityAddress,
         umaAddress: this.umaAddress,
+        chainlinkConsumerAddress: this.chainlinkConsumerAddress,
         network: this.network,
         multiSendAddress: this.multiSendAddress,
         tokens: [],
@@ -180,24 +186,48 @@ export default {
   },
   async mounted() {
     try {
-      const moduleType = await plugin.validateUmaModule(
+      const moduleType = await plugin.getModuleType(
         this.network,
-        this.umaAddress
+        this.realityAddress,
+        this.umaAddress,
+        this.chainlinkConsumerAddress
       );
 
-      const { dao } =
-        moduleType === 'reality'
-          ? await plugin.getModuleDetailsReality(
+      const getDao = async () => {
+        switch (moduleType) {
+          case 'uma':
+            return await plugin.getModuleDetailsUma(
+              this.network,
+              this.umaAddress
+            );
+          case 'chainlink':
+            return await plugin.getModuleDetailsChainlink(
+              this.network,
+              this.chainlinkConsumerAddress
+            );
+          default: // reality
+            return await plugin.getModuleDetailsReality(
               this.network,
               this.realityAddress
-            )
-          : await plugin.getModuleDetailsUma(this.network, this.umaAddress);
+            );
+        }
+      };
 
-      const moduleAddress =
-        moduleType === 'reality' ? this.realityAddress : this.umaAddress;
+      const moduleAddress = () => {
+        switch (moduleType) {
+          case 'uma':
+            return this.umaAddress;
+          case 'chainlink':
+            return this.chainlinkConsumerAddress;
+          default: // reality
+            return this.realityAddress;
+        }
+      };
+
+      const { dao } = await getDao();
 
       this.moduleType = moduleType;
-      this.moduleAddress = moduleAddress;
+      this.moduleAddress = moduleAddress();
       this.moduleTypeReady = true;
       this.gnosisSafeAddress = dao;
       this.transactionConfig = {
@@ -230,6 +260,10 @@ export default {
       this.input.splice(index, 1);
       this.$emit('update:modelValue', this.input);
     },
+    updateExecutableIf(executableIf) {
+      this.executableIf = executableIf;
+      this.$emit('update:executableIf', this.executableIf);
+    },
     updateTransactionBatch(index, batch) {
       this.input[index] = batch;
       this.$emit('update:modelValue', this.input);
@@ -253,7 +287,7 @@ export default {
 <template>
   <div>
     <h4
-      class="flex rounded-t-none border-b px-4 pt-3 pb-[12px] md:rounded-t-md"
+      class="flex rounded-t-none border-b px-4 pb-[12px] pt-3 md:rounded-t-md"
     >
       <BaseAvatar class="float-left mr-2" :src="networkIcon" size="28" />
       {{ networkName }} Safe
@@ -274,6 +308,17 @@ export default {
         :module-type="moduleType"
       />
     </h4>
+    <div
+      v-if="this.moduleType === 'chainlink'"
+      class="rounded-t-none border-b px-4 pb-[12px] pt-3 md:rounded-t-md"
+    >
+      <SafeSnapFormExecutableIf
+        :proposal="proposal"
+        :modelValue="input"
+        :config="transactionConfig"
+        @update:executableIf="updateExecutableIf($event)"
+      />
+    </div>
     <UiCollapsibleText
       v-if="hash"
       :show-arrow="true"
@@ -336,6 +381,22 @@ export default {
           :space="space"
           :results="results"
           :uma-address="transactionConfig.umaAddress"
+          :multi-send-address="transactionConfig.multiSendAddress"
+          :network="transactionConfig.network"
+        />
+
+        <SafeSnapHandleOutcomeChainlink
+          v-if="
+            preview &&
+            proposalResolved &&
+            moduleType === 'chainlink' &&
+            moduleTypeReady
+          "
+          :batches="input"
+          :proposal="proposal"
+          :chainlink-consumer-address="
+            transactionConfig.chainlinkConsumerAddress
+          "
           :multi-send-address="transactionConfig.multiSendAddress"
           :network="transactionConfig.network"
         />

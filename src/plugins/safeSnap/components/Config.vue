@@ -1,6 +1,11 @@
 <script>
 import { clone } from '@snapshot-labs/snapshot.js/src/utils';
-import { coerceConfig, isValidInput, getSafeHash } from '../index';
+import {
+  coerceExecutableTxs,
+  coerceConfig,
+  isValidInput,
+  getSafeHash
+} from '../index';
 
 import SafeTransactions from './SafeTransactions.vue';
 
@@ -17,7 +22,7 @@ export default {
   ],
   emits: ['update:modelValue'],
   data() {
-    let input;
+    let input, executableIf, executableTxs;
     if (!Object.keys(this.modelValue).length) {
       input = {
         safes: coerceConfig(this.config, this.network).safes.map(safe => ({
@@ -25,7 +30,9 @@ export default {
           hash: null,
           txs: []
         })),
-        valid: true
+        valid: true,
+        executableIf: this.proposal.choices[0].text,
+        executableTxs: []
       };
     } else {
       const value = clone(this.modelValue);
@@ -34,11 +41,12 @@ export default {
           ...this.config.safes[index],
           ...safe
         }));
+        // executableTxs is an array of keccak256 hashes of the safe transactions
+        value.executableTxs = coerceExecutableTxs(value.safes);
       }
       input = coerceConfig(value, this.network);
     }
-
-    return { input };
+    return { input, executableTxs, executableIf };
   },
   methods: {
     updateSafeTransactions() {
@@ -50,7 +58,12 @@ export default {
           hash: getSafeHash(safe)
         };
       });
+      this.input.executableTxs = coerceExecutableTxs(this.input.safes);
       this.$emit('update:modelValue', this.input);
+    },
+    updateExecutableIf(executableIf) {
+      this.executableIf = executableIf;
+      this.updateSafeTransactions();
     }
   }
 };
@@ -59,7 +72,7 @@ export default {
 <template>
   <div
     v-if="!preview || input.safes.length > 0"
-    class="mb-4 rounded-none border-t border-b bg-skin-block-bg md:rounded-xl md:border"
+    class="mb-4 rounded-none border-b border-t bg-skin-block-bg md:rounded-xl md:border"
   >
     <h4 class="block border-b px-4 pt-3" style="padding-bottom: 12px">
       {{ $t('safeSnap.transactions') }}
@@ -77,11 +90,13 @@ export default {
         :results="results"
         :hash="safe.hash"
         :network="safe.network"
+        :chainlink-consumer-address="safe.chainlinkConsumerAddress"
         :reality-address="safe.realityAddress"
         :uma-address="safe.umaAddress"
         :multi-send-address="safe.multiSendAddress"
         :model-value="safe.txs"
         @update:modelValue="updateSafeTransactions(index, $event)"
+        @update:executableIf="updateExecutableIf($event)"
       />
     </div>
   </div>

@@ -18,12 +18,14 @@ import getProvider from '@snapshot-labs/snapshot.js/src/utils/provider';
 import {
   SafeTransaction,
   RealityOracleProposal,
-  UmaOracleProposal
+  UmaOracleProposal,
+  ChainlinkOracleProposal
 } from '@/helpers/interfaces';
 import {
   EIP712_TYPES,
   REALITY_MODULE_ABI,
   UMA_MODULE_ABI,
+  CHAINLINK_CONSUMER_ABI,
   ORACLE_ABI,
   ERC20_ABI
 } from './constants';
@@ -34,6 +36,10 @@ import {
   getProposalDetails
 } from './utils/realityModule';
 import { getModuleDetailsUma } from './utils/umaModule';
+import {
+  getModuleDetailsChainlink,
+  getProposalDetailsChainlink
+} from './utils/chainlinkModule';
 import { retrieveInfoFromOracle } from './utils/realityETH';
 import { getNativeAsset } from '@/plugins/safeSnap/utils/coins';
 
@@ -142,9 +148,49 @@ export default class Plugin {
     return getModuleDetailsReality(provider, network, moduleAddress);
   }
 
-  async validateUmaModule(network: string, umaAddress: string) {
-    if (!isAddress(umaAddress)) return 'reality';
+  async getModuleDetailsChainlink(
+    network: string,
+    moduleAddress: string,
+    transactions: any
+  ) {
+    const provider: StaticJsonRpcProvider = getProvider(network);
+    return getModuleDetailsChainlink(
+      provider,
+      network,
+      moduleAddress,
+      transactions
+    );
+  }
 
+  async getProposalDetailsChainlink(
+    network: string,
+    moduleAddress: string,
+    proposalId: string
+  ) {
+    const provider: StaticJsonRpcProvider = getProvider(network);
+    return getProposalDetailsChainlink(
+      provider,
+      network,
+      moduleAddress,
+      proposalId
+    );
+  }
+
+  async getModuleType(
+    network: string,
+    realityAddress: string,
+    umaAddress: string,
+    chainlinkAddress: string
+  ) {
+    if (
+      !isAddress(umaAddress) &&
+      !isAddress(realityAddress) &&
+      isAddress(chainlinkAddress)
+    ) {
+      return 'chainlink';
+    }
+
+    if (!isAddress(umaAddress)) return 'reality';
     const provider: StaticJsonRpcProvider = getProvider(network);
     const moduleContract = new Contract(umaAddress, UMA_MODULE_ABI, provider);
 
@@ -152,6 +198,31 @@ export default class Plugin {
       .rules()
       .then(() => 'uma')
       .catch(() => 'reality');
+  }
+
+  async getExecutionDetailsChainlink(
+    network: string,
+    moduleAddress: string,
+    proposalId: string,
+    transactions: any
+  ): Promise<Omit<ChainlinkOracleProposal, 'transactions'>> {
+    const moduleDetails = await this.getModuleDetailsChainlink(
+      network,
+      moduleAddress,
+      transactions
+    );
+
+    const proposalDetails = await this.getProposalDetailsChainlink(
+      network,
+      moduleAddress,
+      proposalId
+    );
+
+    return {
+      ...moduleDetails,
+      ...proposalDetails,
+      proposalId
+    };
   }
 
   async getExecutionDetailsUma(
@@ -199,6 +270,38 @@ export default class Plugin {
     yield approveTx;
     const approvalReceipt = await approveTx.wait();
     console.log('[DAO module] token transfer approved:', approvalReceipt);
+    yield;
+  }
+
+  async *fetchProposalResultsChainlink(
+    network: string,
+    web3: any,
+    moduleAddress: string,
+    proposalId: string,
+    request: any,
+    gasLimit: number
+  ) {
+    const moduleDetails = await this.getModuleDetailsChainlink(
+      network,
+      moduleAddress,
+      []
+    );
+
+    const tx = await sendTransaction(
+      web3,
+      moduleAddress,
+      CHAINLINK_CONSUMER_ABI,
+      'executeRequest',
+      [
+        request.source,
+        request.secrets ?? [],
+        request.secretsLocation,
+        request.args ?? [],
+        gasLimit
+      ],
+      { gasLimit: 1500000 }
+    );
+
     yield;
   }
 
@@ -401,6 +504,32 @@ export default class Plugin {
       '[Realitio] executed claimMultipleAndWithdrawBalance:',
       receipt
     );
+  }
+
+  async *executeProposalWithHashesChainlink(
+    web3: any,
+    moduleAddress: string,
+    proposalId: string,
+    moduleTx: SafeTransaction,
+    transactionIndex: number
+  ) {
+    const tx = await sendTransaction(
+      web3,
+      moduleAddress,
+      CHAINLINK_CONSUMER_ABI,
+      'executeProposalWithIndex',
+      [
+        proposalId,
+        moduleTx.to,
+        moduleTx.value,
+        moduleTx.data || '0x',
+        moduleTx.operation,
+        transactionIndex
+      ]
+    );
+    yield;
+    const receipt = await tx.wait();
+    console.log('[DAO module] executed proposal:', receipt);
   }
 
   async *executeProposalWithHashes(

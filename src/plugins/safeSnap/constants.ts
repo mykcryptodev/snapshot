@@ -309,6 +309,16 @@ export const UMA_FINDER_ABI = [
   'function transferOwnership(address newOwner)'
 ];
 
+export const CHAINLINK_CONSUMER_ABI = [
+  'function executeRequest(string source, bytes secrets, uint8 secretsLocation, string[] args, uint32 gasLimit)',
+  'function executeProposalWithIndex(string proposalId, address to, uint256 value, bytes data, uint8 operation, uint256 txIndex)',
+  'function cooldown() view returns (uint256)',
+  'function hasCompletelyExecuted(string proposalId) view returns (bool)',
+  'function hasTxData(string proposalId) view returns (bool)',
+  'function getTxData(string proposalId, uint256 index) view returns (bytes32)',
+  'function proposals(string proposalId) view returns (uint256)'
+];
+
 export const ERC20_ABI = [
   //Read functions
   'function balanceOf(address account) view returns (uint256)',

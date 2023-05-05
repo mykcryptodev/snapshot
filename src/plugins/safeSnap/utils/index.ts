@@ -1,6 +1,8 @@
 import { isAddress } from '@ethersproject/address';
 import { JsonRpcProvider } from '@ethersproject/providers';
 import { keccak256 } from '@ethersproject/solidity';
+import { keccak256 as keccak256hash } from '@ethersproject/keccak256';
+import { defaultAbiCoder } from '@ethersproject/abi';
 import memoize from 'lodash/memoize';
 
 import SafeSnapPlugin, { MULTI_SEND_VERSION } from '../index';
@@ -93,6 +95,47 @@ export function validateSafeData(safe) {
 
 export function isValidInput(input) {
   return input.safes.every(validateSafeData);
+}
+
+// export function coerceExecutableTxs (safes) {
+//   return safes[0].txs.map(tx => {
+//     return tx.transactions.filter(transaction => {
+//       return transaction && transaction.to
+//     }).map(transaction => {
+//       return keccak256hash(
+//         defaultAbiCoder.encode(
+//           ['address', 'uint256', 'bytes', 'uint8'],
+//           [
+//             transaction.to,
+//             transaction.value,
+//             transaction.data,
+//             transaction.operation
+//           ]
+//         )
+//       )
+//     })
+//   });
+// }
+
+export function coerceExecutableTxs(safes) {
+  return safes[0].txs
+    .filter(tx => tx.mainTransaction)
+    .map(tx => {
+      // use the transaction unless this is a batch
+      const transaction =
+        tx.transactions.length === 1 ? tx.transactions[0] : tx.mainTransaction;
+      return keccak256hash(
+        defaultAbiCoder.encode(
+          ['address', 'uint256', 'bytes', 'uint8'],
+          [
+            transaction.to,
+            transaction.value,
+            transaction.data,
+            transaction.operation
+          ]
+        )
+      );
+    });
 }
 
 export function coerceConfig(config, network) {
